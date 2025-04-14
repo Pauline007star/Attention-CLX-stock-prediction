@@ -10,7 +10,7 @@ from utils import *
 #plt.rcParams['font.sans-serif'] = ['SimHei']    # for chinese text on plt
 #plt.rcParams['axes.unicode_minus'] = False      # for chinese text negative symbol '-' on plt
 
-data = pd.read_csv('./601988.SH.csv')
+data = pd.read_csv('/mnt/disk2/peiling.chen/Attention-CLX-stock-prediction/601988.SH.csv')
 test_set2 = data.loc[3501:, :] 
 data.index = pd.to_datetime(data['trade_date'], format='%Y%m%d') 
 data = data.drop(['ts_code', 'trade_date'], axis=1)
@@ -86,7 +86,7 @@ for t in range(test_set.shape[0]):
     model1 = sm.tsa.ARIMA(history, order=(2, 1, 0))
     model_fit = model1.fit()
     yhat = model_fit.forecast()
-    yhat = np.float(yhat[0])
+    yhat = float(yhat[0]) 
     predictions.append(yhat)
     obs = test_set2.iloc[t, 5]
     # obs = np.float(obs)

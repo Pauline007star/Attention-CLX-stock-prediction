@@ -6,7 +6,7 @@ from sklearn import metrics
 from utils import *
 from model import *
 
-data1 = pd.read_csv("./601988.SH.csv")
+data1 = pd.read_csv("/mnt/disk2/peiling.chen/Attention-CLX-stock-prediction/601988.SH.csv")
 data1.index = pd.to_datetime(data1['trade_date'], format='%Y%m%d')
 #data1 = data1.drop(['ts_code', 'trade_date', 'turnover_rate', 'volume_ratio', 'pb', 'total_share', 'float_share', 'free_share'], axis=1)
 data1 = data1.loc[:, ['open', 'high', 'low', 'close', 'vol', 'amount']]

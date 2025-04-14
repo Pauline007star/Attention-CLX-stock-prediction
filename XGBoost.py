@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from utils import *
 from model import walk_forward_validation
 
-data = pd.read_csv('./601988.SH.csv')
+data = pd.read_csv('/mnt/disk2/peiling.chen/Attention-CLX-stock-prediction/601988.SH.csv')
 data.index = pd.to_datetime(data['trade_date'], format='%Y%m%d')
 data = data.loc[:, ['open', 'high', 'low', 'close', 'vol', 'amount']]
 # data = pd.DataFrame(data, dtype=np.float64)
