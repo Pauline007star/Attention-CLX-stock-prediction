@@ -2,55 +2,73 @@
 
 **Do Market Features Beat the Last Close?**
 
-This project tests whether market indicators and recent ARIMA forecast errors improve next-session closing-price forecasts for Bank of China. On 180 shared test dates, adding two PCA components lowered average LSTM MAE by **1.49%** versus the same architecture using market data alone. The previous-close baseline still had the lowest MAE and RMSE in all three runs.
+After Bank of China closes for the day, should a next-session forecasting model use recent trading activity and ARIMA forecast errors, or simply carry forward the closing price? This project tests both the value of those features within an LSTM and whether the resulting forecast earns its place over the simplest baseline.
 
-| Forecast | Test MAE | Test RMSE |
+**Decision on this benchmark.** Keep the previous close as the reference forecast. It had the lowest MAE and RMSE across all 180 shared test dates in each of three runs. Adding two PCA components lowered the LSTM’s average MAE by **1.49%** relative to the same architecture using market data alone. The PCA model still had **4.76% higher MAE** than carrying forward the last close.
+
+| Forecast | Mean test MAE | Mean test RMSE |
 |---|---:|---:|
 | Last observed close | **0.01172** | **0.01645** |
-| LSTM with historical market data | 0.01247 | 0.01659 |
-| LSTM with market data and two PCA components | 0.01228 | 0.01651 |
+| Expanding ARIMA(2,1,0) | 0.01197 | 0.01650 |
+| LSTM with market data | 0.01247 | 0.01659 |
+| LSTM with market data and six engineered factors | 0.01238 | 0.01655 |
+| LSTM with market data and two factor PCs | 0.01228 | 0.01651 |
 
-The LSTM metrics are means across three training seeds on one historical test window. The benchmark uses chronological validation and training-only preprocessing.
+Neural metrics are averaged across seeds 7, 21 and 42. The full report includes the residual tree, the Attention CNN–BiLSTM backbone and per-run records. [Full results](results/RESULTS.md)
 
-[Read the experiment and run it on CPU](next-session-close-benchmark/README.md) · [Inspect the full results and run records](next-session-close-benchmark/results/RESULTS.md)
+## What the comparison tests
 
-The original fork records changes to recurrent training and adds experiments with market inputs, ARIMA residuals and PCA features. The revised benchmark evaluates a shared next-close target with time-aligned inputs. The Attention-CLX architecture is credited to Shi, Hu, Mo and Wu. [Upstream implementation](https://github.com/zshicode/Attention-CLX-stock-prediction) · [Paper](https://arxiv.org/abs/2204.02623)
+1. **Does the feature set improve the LSTM?** Three variants share a 10-session window and a 24-unit LSTM. All predict the next close change, which is added to the last close for scoring. The input variants are OHLC, volume and trading amount alone, the same market fields with six engineered factors, and the market fields with two PCA components derived from those factors.
+2. **Does the resulting forecast beat a cheap alternative?** Each variant is scored against the previous close and an expanding-window ARIMA on the same dates. A separate XGBoost experiment tests whether predicting one-step residuals improves fixed-parameter ARIMA. The PyTorch Attention backbone is also evaluated as a standalone price forecaster.
 
-<details>
-<summary>Original Attention-CLX documentation</summary>
+The six factors summarize daily return, distance from the five-session moving average, 10-session return volatility, intraday range relative to close, log-volume change and the observed ARIMA forecast error. The ablation evaluates the feature bundle. It does not isolate the value of any one factor.
 
-## Attention-based CNN-LSTM and XGBoost hybrid model for stock prediction
+## Evaluation protocol
 
-### Requirements
+- **Decision time.** Each forecast is issued after the previous session's OHLC, volume and amount are available. Every output row pairs an as-of date with the next observed trading session. As a new close arrives, it can enter subsequent one-step forecast windows.
+- **Chronological split.** The CSV has 3,681 observations for 601988.SH, from 2007-01-04 through 2022-03-17. After warm-up there are 2,875 training targets, 354 validation targets starting 2020-01-02 and 180 test targets starting 2021-06-22. Validation MAE selects recurrent checkpoints and tree count.
+- **Training-only transforms.** Feature scalers and PCA are fit on training inputs. The ARIMA residual feature uses parameters fit on the first 252 observations, then one-step predictions from prior closes. The realized residual enters the features only after the actual close is known. The expanding ARIMA baseline refits before each test forecast. [Statsmodels state-space methods](https://www.statsmodels.org/stable/statespace.html)
 
-The code has been tested running under Python 3.7.4, with the following packages and their dependencies installed:
-```
-numpy==1.16.5
-sklearn==0.21.3
-statsmodels==0.10.1
-pandas==0.25.1
-tensorflow==2.1.0
-keras==2.3.1
-xgboost==1.5.0
-```
+The scores describe one stock over a previously inspected historical window. The upstream README identifies TuShare as the source, and its adjustment settings are undocumented. The evaluation measures price error in the input CSV’s units. A trading-performance evaluation would require its own decision rule and execution assumptions.
 
-The stock data used in this repository was downloaded from [TuShare](https://tushare.pro/). The stock data on [TuShare](https://tushare.pro/) are with public availability.
+## Run on CPU
 
-### Usage
+From the repository root, using the verified Python 3.9.10 environment or a new Python 3.9 environment:
 
-Firstly, run `ARIMA.py` for pre-processing step by ARIMA model. Then, run the neural network or XGBoost models.
-- Run `LSTM.py` for the single-layer LSTM, multi-layer LSTM, and bidirectional LSTM models.
-- Run `XGBoost.py` for the XGBoost model.
-- Run `Main.py` for our proposed Attention-based CNN-LSTM and XGBoost hybrid model.
+```sh
+python3.9 -m venv .venv
+source .venv/bin/activate
+python -m pip install -r requirements.txt
 
-### Citation
-```
-@article{shi2022attclx,
-    author={Zhuangwei Shi and Yang Hu and Guangliang Mo and Jian Wu},
-    title={Attention-based CNN-LSTM and XGBoost hybrid model for stock prediction},
-    journal={arXiv preprint arXiv:2204.02623},
-    year={2022},
-}
+DATA="legacy/601988.SH.csv"
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python -m unittest discover -s tests -v
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python -m forecasting --data "$DATA" \
+  --output runs/smoke --epochs 1 --limit 3
+OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python -m forecasting --data "$DATA" \
+  --output runs/seed42 --seed 42
 ```
 
-</details>
+Add `--baseline-only` for the three statistical baselines. The optional XGBoost run uses `python -m pip install -r requirements-xgboost.txt` and adds `--xgboost` to the run command. On macOS, a missing OpenMP library can be installed with `brew install libomp`. The verified Mac run used the OpenMP library already supplied with its PyTorch installation. [XGBoost installation guide](https://xgboost.readthedocs.io/en/stable/install.html)
+
+Use a new output directory for each run. Every run writes a dated `predictions.csv` and `metrics.json` with the split, checkpoint, input checksum and library versions. To reproduce the reported tree row, use `--xgboost`. To repeat the neural ablation across all reported seeds, run with 7, 21 and 42 in separate directories.
+
+## Project layout
+
+| Location | Responsibility |
+|---|---|
+| `forecasting/data.py` | Input validation, causal factors and residuals, train-only PCA, date-labelled windows |
+| `forecasting/models.py` | LSTM ablations, Attention backbone, validation checkpoint selection |
+| `forecasting/trees.py` | Optional ARIMA residual correction |
+| `forecasting/__main__.py` | Single command for training, scoring and saving dated results |
+| `tests/` | Timing and leakage regression tests, neural output shape checks |
+| `results/` | Verified summary and run metadata |
+| `docs/` | Migration notes and comparison with the historical experiments |
+| `legacy/` | Archived scripts, notebook, data and historical outputs |
+
+[Migration notes](docs/MIGRATION.md) · [Historical README](legacy/README.md)
+
+The benchmark reads the original market CSV from `legacy/`. The archived experiments retain their original dependency and path assumptions.
+
+## Attribution
+
+The historical fork added recurrent training changes, market-input comparisons and PCA experiment artifacts. This revision reorganizes those experiments and reruns them under one evaluation protocol. The Attention architecture is attributed to Shi, Hu, Mo and Wu. [Historical fork](https://github.com/Pauline007star/Attention-CLX-stock-prediction/tree/4948cca73b1dc789925d0e06faf18c6e3d4ef9b7) · [Upstream implementation](https://github.com/zshicode/Attention-CLX-stock-prediction) · [Paper](https://arxiv.org/abs/2204.02623)
