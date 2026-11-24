@@ -1,0 +1,86 @@
+{
+  "stock": "601988.SH",
+  "data_sha256": "6a2a40e4538182d5d70553b7e73773f7e6cf26d57edf83972c987b3265e0a170",
+  "validation_start": "2020-01-02",
+  "test_start": "2021-06-22",
+  "counts": {
+    "train": 2875,
+    "validation": 354,
+    "test": 180,
+    "test_scored": 180
+  },
+  "last_test_target": "2022-03-17",
+  "seed": 21,
+  "epochs": 12,
+  "arima_nonconverged_test_fits": 0,
+  "residual_initial_fit_converged": true,
+  "pca_explained_variance_ratio": [
+    0.46621203908296566,
+    0.2798959117559385
+  ],
+  "validation_checkpoint_selection": {
+    "lstm_market": {
+      "validation_mae": 0.01962896724867859,
+      "epoch": 2
+    },
+    "lstm_factors": {
+      "validation_mae": 0.01975640986710177,
+      "epoch": 1
+    },
+    "lstm_pca": {
+      "validation_mae": 0.0195824377154223,
+      "epoch": 1
+    },
+    "attention_backbone": {
+      "validation_mae": 0.02493521733472576,
+      "epoch": 10
+    },
+    "arima_xgboost": {
+      "validation_mae": 0.019632070210317876,
+      "trees": 150
+    }
+  },
+  "versions": {
+    "numpy": "1.26.4",
+    "pandas": "1.5.3",
+    "scipy": "1.11.4",
+    "statsmodels": "0.14.2",
+    "scikit-learn": "1.5.1",
+    "torch": "2.3.1",
+    "xgboost": "2.1.4"
+  },
+  "metrics": {
+    "last_close": {
+      "mae": 0.011722222222222238,
+      "rmse": 0.016448573055300453
+    },
+    "arima_fixed": {
+      "mae": 0.012073063719341238,
+      "rmse": 0.016548417080215632
+    },
+    "arima_210": {
+      "mae": 0.011970286333160574,
+      "rmse": 0.016502305513228094
+    },
+    "lstm_market": {
+      "mae": 0.012267853680933428,
+      "rmse": 0.01652195971211827
+    },
+    "lstm_factors": {
+      "mae": 0.012355017424904484,
+      "rmse": 0.0165405710030439
+    },
+    "lstm_pca": {
+      "mae": 0.01226582990986452,
+      "rmse": 0.01648568260476766
+    },
+    "attention_backbone": {
+      "mae": 0.015230087916056324,
+      "rmse": 0.019933157484651912
+    },
+    "arima_xgboost": {
+      "mae": 0.012100412039558297,
+      "rmse": 0.016481620022762798
+    }
+  }
+}

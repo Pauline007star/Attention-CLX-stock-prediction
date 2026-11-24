@@ -1,0 +1,86 @@
+{
+  "stock": "601988.SH",
+  "data_sha256": "6a2a40e4538182d5d70553b7e73773f7e6cf26d57edf83972c987b3265e0a170",
+  "validation_start": "2020-01-02",
+  "test_start": "2021-06-22",
+  "counts": {
+    "train": 2875,
+    "validation": 354,
+    "test": 180,
+    "test_scored": 180
+  },
+  "last_test_target": "2022-03-17",
+  "seed": 42,
+  "epochs": 12,
+  "arima_nonconverged_test_fits": 0,
+  "residual_initial_fit_converged": true,
+  "pca_explained_variance_ratio": [
+    0.46621203908296566,
+    0.2798959117559385
+  ],
+  "validation_checkpoint_selection": {
+    "lstm_market": {
+      "validation_mae": 0.019556917923771757,
+      "epoch": 1
+    },
+    "lstm_factors": {
+      "validation_mae": 0.01974725836458705,
+      "epoch": 2
+    },
+    "lstm_pca": {
+      "validation_mae": 0.019558846303482976,
+      "epoch": 1
+    },
+    "attention_backbone": {
+      "validation_mae": 0.026951059891005703,
+      "epoch": 9
+    },
+    "arima_xgboost": {
+      "validation_mae": 0.019632070210317876,
+      "trees": 150
+    }
+  },
+  "versions": {
+    "numpy": "1.26.4",
+    "pandas": "1.5.3",
+    "scipy": "1.11.4",
+    "statsmodels": "0.14.2",
+    "scikit-learn": "1.5.1",
+    "torch": "2.3.1",
+    "xgboost": "2.1.4"
+  },
+  "metrics": {
+    "last_close": {
+      "mae": 0.011722222222222238,
+      "rmse": 0.016448573055300453
+    },
+    "arima_fixed": {
+      "mae": 0.012073063719341238,
+      "rmse": 0.016548417080215632
+    },
+    "arima_210": {
+      "mae": 0.011970286333160574,
+      "rmse": 0.016502305513228094
+    },
+    "lstm_market": {
+      "mae": 0.01254676698792417,
+      "rmse": 0.01661812873766195
+    },
+    "lstm_factors": {
+      "mae": 0.012544112172081255,
+      "rmse": 0.016593981305365043
+    },
+    "lstm_pca": {
+      "mae": 0.01211439302399394,
+      "rmse": 0.0164711384730782
+    },
+    "attention_backbone": {
+      "mae": 0.016011194705963138,
+      "rmse": 0.021234694771986196
+    },
+    "arima_xgboost": {
+      "mae": 0.012100412039558297,
+      "rmse": 0.016481620022762798
+    }
+  }
+}
